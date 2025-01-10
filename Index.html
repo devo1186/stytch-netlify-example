@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<!-- تأكد من حفظ هذا الملف باسم index.html -->
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>قاعدة بيانات FKK</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { margin-top: 30px; }
+        .form-control { margin-bottom: 10px; }
+        .card { margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn { margin-right: 5px; }
+        .table { margin-bottom: 0; }
+        .card-header { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">قاعدة بيانات FKK</h1>
+        
+        <!-- نموذج إضافة سجل جديد -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>إضافة سجل جديد</h5>
+            </div>
+            <div class="card-body">
+                <form id="addRecordForm">
+                    <input type="text" id="fkk" class="form-control" placeholder="FKK (مثل 678-2 أو 288-6 أو اسم)" required>
+                    <input type="text" id="owner_name" class="form-control" placeholder="اسم المالك" required>
+                    <input type="text" id="location" class="form-control" placeholder="الموقع" required>
+                    <input type="text" id="maintenance" class="form-control" placeholder="الصيانة" required>
+                    <input type="text" id="activation" class="form-control" placeholder="التفعيل" required>
+                    <button type="submit" class="btn btn-primary">إضافة</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- نموذج البحث -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>بحث</h5>
+            </div>
+            <div class="card-body">
+                <form id="searchForm">
+                    <input type="text" id="search_fkk" class="form-control" placeholder="ادخل رقم أو اسم FKK للبحث">
+                    <button type="button" class="btn btn-secondary" onclick="searchRecord()">بحث</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- جدول عرض السجلات -->
+        <div class="card">
+            <div class="card-header">
+                <h5>السجلات</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>FKK</th>
+                                <th>اسم المالك</th>
+                                <th>الموقع</th>
+                                <th>الصيانة</th>
+                                <th>التفعيل</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- قسم نسخ المعلومات -->
+        <div class="card mt-4" id="copySection" style="display: none;">
+            <div class="card-header">
+                <h5>المعلومات المطلوبة</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label>الصيانة:</label>
+                    <textarea id="maintenanceText" class="form-control" readonly></textarea>
+                    <button class="btn btn-secondary mt-2" onclick="copyToClipboard('maintenanceText')">نسخ الصيانة</button>
+                </div>
+                <div class="mb-3">
+                    <label>التفعيل:</label>
+                    <textarea id="activationText" class="form-control" readonly></textarea>
+                    <button class="btn btn-secondary mt-2" onclick="copyToClipboard('activationText')">نسخ التفعيل</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, remove, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDav-e8hdtYkd4qR0LSA2pCLQixrnRJb4w",
+            authDomain: "liqaaaa-bd087.firebaseapp.com",
+            databaseURL: "https://liqaaaa-bd087-default-rtdb.firebaseio.com",
+            projectId: "liqaaaa-bd087",
+            storageBucket: "liqaaaa-bd087.firebasestorage.app",
+            messagingSenderId: "641751852844",
+            appId: "1:641751852844:web:8c8447904b40fb31912e89",
+            measurementId: "G-ZNQM3S9ZBX"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const recordsRef = ref(database, 'records');
+
+        // تحديث الجدول
+        function updateTable(records) {
+            const recordsBody = document.getElementById('recordsBody');
+            recordsBody.innerHTML = '';
+            if (records) {
+                Object.entries(records).forEach(([key, record]) => {
+                    recordsBody.innerHTML += `
+                        <tr>
+                            <td>${record.fkk}</td>
+                            <td>${record.owner_name}</td>
+                            <td>${record.location}</td>
+                            <td>${record.maintenance}</td>
+                            <td>${record.activation}</td>
+                            <td>
+                                <button class="btn btn-success btn-sm" onclick="window.showDetails('${key}')">عرض</button>
+                                <button class="btn btn-danger btn-sm" onclick="window.confirmDelete('${key}')">حذف</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // إضافة سجل جديد
+        document.getElementById('addRecordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newRecord = {
+                fkk: document.getElementById('fkk').value,
+                owner_name: document.getElementById('owner_name').value,
+                location: document.getElementById('location').value,
+                maintenance: document.getElementById('maintenance').value,
+                activation: document.getElementById('activation').value
+            };
+            push(recordsRef, newRecord);
+            this.reset();
+            alert('تمت الإضافة بنجاح!');
+        });
+
+        // مراقبة التغييرات في البيانات
+        onValue(recordsRef, (snapshot) => {
+            const records = snapshot.val();
+            updateTable(records);
+        });
+
+        // البحث
+        window.searchRecord = function() {
+            const searchFkk = document.getElementById('search_fkk').value.toLowerCase();
+            get(recordsRef).then((snapshot) => {
+                const records = snapshot.val() || {};
+                const filteredRecords = {};
+                Object.entries(records).forEach(([key, record]) => {
+                    if (record.fkk.toLowerCase().includes(searchFkk)) {
+                        filteredRecords[key] = record;
+                    }
+                });
+                updateTable(filteredRecords);
+            });
+        };
+
+        // عرض التفاصيل
+        window.showDetails = function(key) {
+            get(child(recordsRef, key)).then((snapshot) => {
+                const record = snapshot.val();
+                const maintenanceText = `الصيانة: ${record.maintenance} - الموقع: ${record.location}`;
+                const activationText = `التفعيل: ${record.activation} - الموقع: ${record.location}`;
+                document.getElementById('maintenanceText').value = maintenanceText;
+                document.getElementById('activationText').value = activationText;
+                document.getElementById('copySection').style.display = 'block';
+            });
+        };
+
+        // نسخ النص
+        window.copyToClipboard = function(elementId) {
+            const textArea = document.getElementById(elementId);
+            textArea.select();
+            document.execCommand('copy');
+            alert('تم النسخ بنجاح!');
+        };
+
+        // تأكيد الحذف
+        window.confirmDelete = function(key) {
+            const password = prompt("يرجى إدخال كلمة المرور:");
+            if (password === "1994") {
+                remove(child(recordsRef, key))
+                    .then(() => alert("تم الحذف بنجاح!"))
+                    .catch(error => alert("حدث خطأ أثناء الحذف"));
+            } else {
+                alert("كلمة المرور غير صحيحة!");
+            }
+        };
+    </script>
+</body>
+</html>
