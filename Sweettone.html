@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>FKK 4 Liqaa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #1a1a1a; 
+            color: #fff;
+        }
+        .container { 
+            margin-top: 30px; 
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        .form-control { 
+            margin-bottom: 10px;
+            background-color: #333;
+            border-color: #444;
+            color: #fff;
+        }
+        .form-control:focus {
+            background-color: #404040;
+            border-color: #666;
+            color: #fff;
+        }
+        .main-title { 
+            font-size: 2.5rem; 
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-primary {
+            background-color: #87CEEB;
+            border-color: #87CEEB;
+        }
+        .btn-primary:hover {
+            background-color: #5f9ea0;
+            border-color: #5f9ea0;
+        }
+        .btn-secondary {
+            background-color: #666;
+            border-color: #666;
+        }
+        .btn-secondary:hover {
+            background-color: #777;
+            border-color: #777;
+        }
+        .card {
+            background-color: #2a2a2a;
+            border-color: #87CEEB;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #333;
+            color: #fff;
+            border-bottom: 1px solid #87CEEB;
+        }
+        .table {
+            color: #fff;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(135, 206, 235, 0.1);
+        }
+        #dhikr {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 0.8rem;
+            color: #87CEEB;
+        }
+        .logo-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            text-align: center;
+        }
+        .logo-container img {
+            width: 100px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        .logo-text {
+            color: #87CEEB;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #87CEEB;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <div id="dhikr" class="text-muted"></div>
+    <div class="logo-container">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_20250111_062327_144-eKMyJSPhAwNmt6XD00fWlJeGnaIuAT.png" alt="Logo">
+        <div class="logo-text">اللقاء نت</div>
+    </div>
+
+    <!-- Login Form -->
+    <div class="container" id="loginContainer">
+        <div class="card">
+            <div class="card-header">
+                <h5>تسجيل الدخول</h5>
+            </div>
+            <div class="card-body">
+                <form id="loginForm">
+                    <input type="email" id="loginEmail" class="form-control" placeholder="البريد الإلكتروني" required>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="كلمة المرور" required>
+                    <button type="submit" class="btn btn-primary">دخول</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="container" id="mainContainer" style="display: none;">
+        <h1 class="text-center mb-4 main-title">FKK 4 Liqaa</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>إضافة سجل جديد</h5>
+            </div>
+            <div class="card-body">
+                <form id="addRecordForm">
+                    <input type="text" id="fkk" class="form-control" placeholder="FKK" required>
+                    <input type="text" id="fat" class="form-control" placeholder="FAT" required>
+                    <input type="text" id="owner_name" class="form-control" placeholder="اسم المالك" required>
+                    <input type="text" id="location" class="form-control" placeholder="الموقع" required>
+                    <input type="text" id="maintenance" class="form-control" placeholder="الصيانة" required>
+                    <input type="text" id="activation" class="form-control" placeholder="التفعيل" required>
+                    <button type="submit" class="btn btn-primary">إضافة</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>بحث</h5>
+            </div>
+            <div class="card-body">
+                <form id="searchForm">
+                    <select id="search_type" class="form-select mb-2">
+                        <option value="fkk">FKK</option>
+                        <option value="fat">FAT</option>
+                        <option value="owner_name">اسم المالك</option>
+                        <option value="location">الموقع</option>
+                    </select>
+                    <input type="text" id="search_term" class="form-control" placeholder="ادخل للبحث">
+                    <button type="button" class="btn btn-secondary mt-2" onclick="searchRecord()">بحث</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>السجلات</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>FKK</th>
+                                <th>FAT</th>
+                                <th>اسم المالك</th>
+                                <th>الموقع</th>
+                                <th>الصيانة</th>
+                                <th>التفعيل</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4" id="copySection" style="display: none;">
+            <div class="card-header">
+                <h5>المعلومات المطلوبة</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label>الصيانة:</label>
+                    <textarea id="maintenanceText" class="form-control" readonly></textarea>
+                    <button class="btn btn-secondary mt-2" onclick="copyToClipboard('maintenanceText')">نسخ الصيانة</button>
+                </div>
+                <div class="mb-3">
+                    <label>التفعيل:</label>
+                    <textarea id="activationText" class="form-control" readonly></textarea>
+                    <button class="btn btn-secondary mt-2" onclick="copyToClipboard('activationText')">نسخ التفعيل</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "your-app.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-app.appspot.com",
+            messagingSenderId: "your-sender-id",
+            appId: "your-app-id"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        let currentUser = null;
+
+        // Loading indicator functions
+        function showLoading() {
+            document.querySelector('.loading').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                currentUser = userCredential.user;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+                loadRecords();
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ في تسجيل الدخول',
+                    text: error.message
+                });
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Load records from Firestore
+        async function loadRecords() {
+            showLoading();
+            try {
+                const snapshot = await db.collection('records').get();
+                const records = [];
+                snapshot.forEach(doc => {
+                    records.push({ id: doc.id, ...doc.data() });
+                });
+                updateTable(records);
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ في تحميل البيانات',
+                    text: error.message
+                });
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Add new record
+        document.getElementById('addRecordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading();
+
+            const newRecord = {
+                fkk: document.getElementById('fkk').value,
+                fat: document.getElementById('fat').value,
+                owner_name: document.getElementById('owner_name').value,
+                location: document.getElementById('location').value,
+                maintenance: document.getElementById('maintenance').value,
+                activation: document.getElementById('activation').value,
+                created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                created_by: currentUser.email
+            };
+
+            try {
+                await db.collection('records').add(newRecord);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تمت الإضافة بنجاح'
+                });
+                e.target.reset();
+                loadRecords();
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ في إضافة السجل',
+                    text: error.message
+                });
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Search records
+        async function searchRecord() {
+            showLoading();
+            const searchType = document.getElementById('search_type').value;
+            const searchTerm = document.getElementById('search_term').value.toLowerCase();
+
+            try {
+                const snapshot = await db.collection('records').get();
+                const records = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data[searchType].toLowerCase().includes(searchTerm)) {
+                        records.push({ id: doc.id, ...data });
+                    }
+                });
+                updateTable(records);
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ في البحث',
+                    text: error.message
+                });
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Update table
+        function updateTable(records) {
+            const recordsBody = document.getElementById('recordsBody');
+            recordsBody.innerHTML = '';
+            records.forEach((record) => {
+                recordsBody.innerHTML += `
+                    <tr>
+                        <td>${record.fkk}</td>
+                        <td>${record.fat}</td>
+                        <td>${record.owner_name}</td>
+                        <td>${record.location}</td>
+                        <td>${record.maintenance}</td>
+                        <td>${record.activation}</td>
+                        <td>
+                            <button class="btn btn-success btn-sm" onclick="showDetails('${record.id}')">عرض</button>
+                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('${record.id}')">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Show details
+        async function showDetails(id)</antArtifact>
